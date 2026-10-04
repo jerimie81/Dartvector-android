@@ -26,4 +26,20 @@ public class NavigationActionTest {
         assertEquals("nav-analytics-btn", actions.get(2).getElementId());
         assertEquals("nav-multiplayer-btn", actions.get(3).getElementId());
     }
+
+    @Test
+    public void fromId_returnsFallbackForUnknownId() {
+        NavigationAction action = NavigationAction.fromId("does-not-exist");
+
+        assertNotNull(action);
+        assertEquals("", action.getElementId());
+    }
+
+    @Test
+    public void fromId_returnsFallbackForNullId() {
+        NavigationAction action = NavigationAction.fromId(null);
+
+        assertNotNull(action);
+        assertEquals("", action.getElementId());
+    }
 }

@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -14,6 +15,8 @@ import android.widget.ProgressBar;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import java.util.List;
+
 import com.google.android.material.button.MaterialButton;
 import com.jerimie81.dartvector.ui.NavigationAction;
 import com.jerimie81.dartvector.web.AssetWebViewClient;
@@ -96,40 +99,38 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     private void configurePrimaryNavigation() {
-        MaterialButton scoreboardButton = findViewById(R.id.navScoreboardButton);
-        MaterialButton setupButton = findViewById(R.id.navSetupButton);
-        MaterialButton analyticsButton = findViewById(R.id.navAnalyticsButton);
-        MaterialButton multiplayerButton = findViewById(R.id.navMultiplayerButton);
-
-        primaryNavigationButtons = new MaterialButton[] {
-                scoreboardButton,
-                setupButton,
-                analyticsButton,
-                multiplayerButton
+        int[] buttonIds = {
+                R.id.navScoreboardButton,
+                R.id.navSetupButton,
+                R.id.navAnalyticsButton,
+                R.id.navMultiplayerButton
         };
 
-        String[] tagIds = new String[] {
-                NavigationAction.ACTION_SCOREBOARD,
-                NavigationAction.ACTION_SETUP,
-                NavigationAction.ACTION_ANALYTICS,
-                NavigationAction.ACTION_MULTIPLAYER
-        };
+        List<NavigationAction> actions = NavigationAction.primaryActions();
+        int count = Math.min(buttonIds.length, actions.size());
+        primaryNavigationButtons = new MaterialButton[count];
 
-        for (int i = 0; i < primaryNavigationButtons.length; i++) {
-            MaterialButton button = primaryNavigationButtons[i];
-            button.setTag(tagIds[i]);
-            button.setContentDescription(NavigationAction.fromId(tagIds[i]).getDescription());
+        for (int i = 0; i < count; i++) {
+            NavigationAction action = actions.get(i);
+            MaterialButton button = findViewById(buttonIds[i]);
+            primaryNavigationButtons[i] = button;
+            button.setTag(action.getElementId());
+            button.setContentDescription(action.getDescription());
             button.setOnClickListener(v -> {
-                String elementId = String.valueOf(v.getTag());
                 setSelectedNavigationButton((MaterialButton) v);
-                clickElementById(elementId);
+                clickElementById(String.valueOf(v.getTag()));
             });
         }
 
-        setSelectedNavigationButton(scoreboardButton);
+        if (count > 0) {
+            setSelectedNavigationButton(primaryNavigationButtons[0]);
+        }
     }
 
     private void setSelectedNavigationButton(MaterialButton selectedButton) {
+        if (primaryNavigationButtons == null) {
+            return;
+        }
         for (MaterialButton button : primaryNavigationButtons) {
             boolean selected = button == selectedButton;
             button.setSelected(selected);
@@ -142,52 +143,49 @@ public final class MainActivity extends AppCompatActivity {
         }
     }
 
+    private enum MenuAction {
+        SCOREBOARD("🎯  Scoreboard", NavigationAction.ACTION_SCOREBOARD),
+        NEW_MATCH("🎮  New Match", NavigationAction.ACTION_SETUP),
+        MATCH_VAULT("📊  Match Vault", NavigationAction.ACTION_ANALYTICS),
+        ONLINE_HUB("📡  Online Hub", NavigationAction.ACTION_MULTIPLAYER),
+        LEAGUE_NIGHT("🍺  League Night", "nav-league-night-btn"),
+        GUIDE("❓  Interactive Guide", "nav-guide-btn"),
+        CALLER_FX("🔊  Caller FX", "audio-settings-toggle-btn"),
+        CHALKBOARD("🍻  Chalkboard Mode", null),
+        RELOAD("🔄  Reload Page", null);
+
+        final String title;
+        final String elementId;
+
+        MenuAction(String title, String elementId) {
+            this.title = title;
+            this.elementId = elementId;
+        }
+    }
+
     private void showPopupMenu(View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor);
         Menu menu = popup.getMenu();
 
-        menu.add(0, 1, 0, "🎯  Scoreboard");
-        menu.add(0, 2, 1, "🎮  New Match");
-        menu.add(0, 3, 2, "📊  Match Vault");
-        menu.add(0, 4, 3, "📡  Online Hub");
-        menu.add(0, 5, 4, "🍺  League Night");
-        menu.add(0, 6, 5, "❓  Interactive Guide");
-        menu.add(0, 7, 6, "🔊  Caller FX");
-        menu.add(0, 8, 7, "🍻  Chalkboard Mode");
-        menu.add(0, 9, 8, "🔄  Reload Page");
+        MenuAction[] actions = MenuAction.values();
+        for (int i = 0; i < actions.length; i++) {
+            menu.add(0, i + 1, i, actions[i].title);
+        }
 
         popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case 1:
-                    clickElementById(NavigationAction.ACTION_SCOREBOARD);
-                    return true;
-                case 2:
-                    clickElementById(NavigationAction.ACTION_SETUP);
-                    return true;
-                case 3:
-                    clickElementById(NavigationAction.ACTION_ANALYTICS);
-                    return true;
-                case 4:
-                    clickElementById(NavigationAction.ACTION_MULTIPLAYER);
-                    return true;
-                case 5:
-                    clickElementById("nav-league-night-btn");
-                    return true;
-                case 6:
-                    clickElementById("nav-guide-btn");
-                    return true;
-                case 7:
-                    clickElementById("audio-settings-toggle-btn");
-                    return true;
-                case 8:
-                    clickChalkboardMode();
-                    return true;
-                case 9:
-                    webView.reload();
-                    return true;
-                default:
-                    return false;
+            int index = item.getItemId() - 1;
+            if (index < 0 || index >= actions.length) {
+                return false;
             }
+            MenuAction action = actions[index];
+            if (action == MenuAction.RELOAD) {
+                webView.reload();
+            } else if (action == MenuAction.CHALKBOARD) {
+                clickChalkboardMode();
+            } else {
+                clickElementById(action.elementId);
+            }
+            return true;
         });
 
         popup.show();
@@ -195,13 +193,40 @@ public final class MainActivity extends AppCompatActivity {
 
     private void clickElementById(String elementId) {
         if (webView == null || elementId == null || elementId.isEmpty()) return;
-        String escapedId = elementId.replace("\\", "\\\\").replace("'", "\\'");
+        String jsonId = toJsonStringLiteral(elementId);
+        String escapedAttr = elementId
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("]", "\\]")
+                .replace("\n", "\\a")
+                .replace("\r", "\\d");
         String js = "(function() {" +
-                "  var el = document.getElementById('" + escapedId + "');" +
+                "  var el = document.getElementById(" + jsonId + ");" +
                 "  if (el) { el.click(); }" +
-                "  else { var b = document.querySelector('[id*=\"" + escapedId + "\"]'); if (b) b.click(); }" +
+                "  else { var b = document.querySelector('[id*=\"" + escapedAttr + "\"]'); if (b) b.click(); }" +
                 "})();";
         webView.evaluateJavascript(js, null);
+    }
+
+    private static String toJsonStringLiteral(String value) {
+        StringBuilder sb = new StringBuilder("\"");
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                default:
+                    if (c < 0x20) {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+            }
+        }
+        return sb.append('"').toString();
     }
 
     private void clickChalkboardMode() {
@@ -223,8 +248,17 @@ public final class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         if (webView != null) {
+            webView.stopLoading();
+            webView.loadUrl("about:blank");
+            ViewGroup parent = (webView.getParent() instanceof ViewGroup) ? (ViewGroup) webView.getParent() : null;
+            if (parent != null) {
+                parent.removeView(webView);
+            }
+            webView.setWebChromeClient(null);
             webView.destroy();
+            webView = null;
         }
+        primaryNavigationButtons = null;
         super.onDestroy();
     }
 }

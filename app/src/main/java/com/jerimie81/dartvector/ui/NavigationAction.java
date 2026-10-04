@@ -18,6 +18,8 @@ public final class NavigationAction {
             new NavigationAction("Analytics", ACTION_ANALYTICS, "Open the stats and analytics panel");
     private static final NavigationAction MULTIPLAYER =
             new NavigationAction("Hub", ACTION_MULTIPLAYER, "Open the multiplayer hub");
+    private static final NavigationAction UNKNOWN =
+            new NavigationAction("", "", "");
 
     private final String title;
     private final String elementId;
@@ -30,12 +32,15 @@ public final class NavigationAction {
     }
 
     public static NavigationAction fromId(String elementId) {
+        if (elementId == null) {
+            return UNKNOWN;
+        }
         for (NavigationAction action : primaryActions()) {
             if (action.elementId.equals(elementId)) {
                 return action;
             }
         }
-        return null;
+        return UNKNOWN;
     }
 
     public static List<NavigationAction> primaryActions() {
