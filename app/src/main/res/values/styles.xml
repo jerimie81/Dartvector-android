@@ -1,26 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:colorAccent">@color/amber_primary</item>
-        <item name="colorPrimary">@color/amber_primary</item>
-        <item name="colorOnPrimary">@color/app_background</item>
-        <item name="colorSurface">@color/surface_panel</item>
-        <item name="android:colorBackground">@color/app_background</item>
-        <item name="android:statusBarColor">@color/app_background</item>
-        <item name="android:navigationBarColor">@color/app_background</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
-        <item name="materialButtonStyle">@style/Widget.DartVector.PrimaryNavButton</item>
-    </style>
-
-    <style name="Widget.DartVector.PrimaryNavButton" parent="Widget.Material3.Button">
-        <item name="android:minHeight">48dp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">12dp</item>
-        <item name="backgroundTint">@color/nav_button_inactive</item>
-        <item name="android:textColor">@color/text_secondary</item>
-        <item name="android:stateListAnimator">@null</item>
+    <style name="Theme.DartVector" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#09090B</item>
+        <item name="android:navigationBarColor">#09090B</item>
+        <item name="android:windowBackground">#09090B</item>
     </style>
 </resources>

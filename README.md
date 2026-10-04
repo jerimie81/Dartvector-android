@@ -1,32 +1,36 @@
-# DartVector Android
+# DartVector - Professional Darts Scoring & Match Engine
 
-Native Android client application for [DartVector](https://github.com/jerimie81/DartVector).
+Precision darts scoring, broadcast-style chalkboard mode, 25-level DartBot, and all-time career analytics. Built with React 19, TypeScript, Vite, and Tailwind CSS.
 
-## Project Overview
+## Features
 
-DartVector Android wraps the DartVector web interface into a native Android application with embedded WebView and native integration capabilities.
+- **Regulation Interactive Sisal Dartboard**: Scaled to official PDC board dimensions with radial sectors, treble and double wire beds, single and double bullseye detection, wire click feedback, and heatmap visualization.
+- **Match Engine**:
+  - **X01 (501, 301, 701)**: Double-In, Straight-In, Double-Out, Master-Out, Straight-Out, legs & sets to win.
+  - **Cricket**: Standard 15-20 & Bull closing with optional point accumulation.
+  - **Around The Clock**: Singles, Doubles, or Trebles progression through 1 to 20 + Bullseye.
+  - **Killer**: Assigned double elimination party game with life counters.
+  - **Shanghai**: Round-by-round point scoring and instant Shanghai win (Single, Double, Treble).
+  - **Bob's 27**: Dedicated double training drill.
+- **25-Level DartBot**: Calibrated Gaussian error model scaling from novice pub throwers (15 avg) up to PDC World No. 1 legends (114 avg) with automated aim and throw generation.
+- **Official Broadcast Chalkboard Mode**: Traditional pub scoreboard view with split columns, turn subtractions, and large chalk typography.
+- **1-Tap Quick House Scores & NumPad**: Instant entry for 60, 100 Ton, 140, 180 Maximum, 26 Breakfast, 41, 45, 81, 85, 0 Miss, BUST, and custom scores.
+- **Web Audio Sound Effects & Referee Caller**:
+  - 4 Synthesized sound packs: PDC Pro Tournament, Traditional Pub, Heavy Steel Tip, Electronic Soft-Tip.
+  - PDC Referee speech caller announcing scores ("ONE HUNDRED AND EIGHTY!", "Ton!"), checkout requirements, and "Game shot and the match!".
+- **Match Vault & Career Analytics**: 3-dart averages, first 9 averages, 180 counters, checkout percentages, leg breakdowns, and JSON export/import.
+- **House League Night & Leaderboard**: Weekly pub league standings table with points and leg differentials.
+- **Throw-by-Throw Log**: Full chronological throw stream with segment badges, timestamps, and reverse sorting.
 
-- **Package Name:** `com.jerimie81.dartvector`
-- **Target SDK:** 35 (Android 15)
-- **Min SDK:** 24 (Android 7.0)
-- **Build System:** Gradle (Kotlin DSL)
-
-## Architecture & Blueprint
-
-For full architectural details, roadmap, native bridges, asset loading strategies, and implementation status, refer to [ANDROID_BLUEPRINT.md](file:///home/redrum/.gemini/projects/Dartvector-android/ANDROID_BLUEPRINT.md).
-
-## Building locally
-
-Make sure you have Android SDK installed (specified in `local.properties`).
+## Development
 
 ```bash
-# Build Debug APK
-./gradlew assembleDebug
+# Install dependencies
+npm install
 
-# Output APK path:
-# app/build/outputs/apk/debug/app-debug.apk
+# Start local development server
+npm run dev
+
+# Build for production
+npm run build
 ```
-
-## Integration with Web App
-
-Web assets from DartVector static export (`out/`) are copied to `app/src/main/assets/` before building the APK.

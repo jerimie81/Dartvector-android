@@ -1,0 +1,8 @@
+{
+  "name": "DartVector - Professional Darts Scoring & Match Engine",
+  "description": "Precision darts scoring, broadcast-style chalkboard mode, 25-level DartBot, and all-time career analytics.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
