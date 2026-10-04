@@ -48,12 +48,12 @@ export const DartPicker: React.FC<DartPickerProps> = ({ onAddDart, dartsInHand }
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 min-w-0 w-full">
       {/* Multiplier Selector */}
-      <div className="flex items-center gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+      <div className="flex items-center gap-1.5 sm:gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800 min-w-0 w-full">
         <button
           onClick={() => setMultiplier(1)}
-          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all min-w-0 truncate ${
             multiplier === 1
               ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
               : 'text-zinc-400 hover:text-white'
@@ -63,7 +63,7 @@ export const DartPicker: React.FC<DartPickerProps> = ({ onAddDart, dartsInHand }
         </button>
         <button
           onClick={() => setMultiplier(2)}
-          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all min-w-0 truncate ${
             multiplier === 2
               ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/50 shadow-sm'
               : 'text-zinc-400 hover:text-white'
@@ -73,7 +73,7 @@ export const DartPicker: React.FC<DartPickerProps> = ({ onAddDart, dartsInHand }
         </button>
         <button
           onClick={() => setMultiplier(3)}
-          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+          className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all min-w-0 truncate ${
             multiplier === 3
               ? 'bg-red-600/30 text-red-300 border border-red-500/50 shadow-sm'
               : 'text-zinc-400 hover:text-white'
@@ -84,7 +84,7 @@ export const DartPicker: React.FC<DartPickerProps> = ({ onAddDart, dartsInHand }
       </div>
 
       {/* Segments Grid 1 to 20 */}
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="grid grid-cols-5 gap-1.5 min-w-0 w-full">
         {BOARD_SEGMENTS.map((seg) => {
           let scoreText = `${seg * multiplier}`;
           let prefix = multiplier === 3 ? 'T' : multiplier === 2 ? 'D' : '';
@@ -92,7 +92,7 @@ export const DartPicker: React.FC<DartPickerProps> = ({ onAddDart, dartsInHand }
             <button
               key={seg}
               onClick={() => handleSelectSegment(seg)}
-              className="py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700/80 active:bg-zinc-600 border border-zinc-700/60 flex flex-col items-center justify-center transition-all active:scale-95"
+              className="py-1.5 sm:py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700/80 active:bg-zinc-600 border border-zinc-700/60 flex flex-col items-center justify-center transition-all active:scale-95 min-w-0 w-full"
             >
               <span className="text-xs font-black text-white">{prefix}{seg}</span>
               <span className="text-[9px] text-amber-400/90 font-mono font-bold">{scoreText}</span>
@@ -102,22 +102,22 @@ export const DartPicker: React.FC<DartPickerProps> = ({ onAddDart, dartsInHand }
       </div>
 
       {/* Bulls & Miss */}
-      <div className="grid grid-cols-3 gap-2 pt-1 border-t border-zinc-800">
+      <div className="grid grid-cols-3 gap-2 pt-1 border-t border-zinc-800 min-w-0 w-full">
         <button
           onClick={() => handleSelectSegment(25)}
-          className="py-2.5 bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1"
+          className="py-2.5 bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1 min-w-0 w-full"
         >
           <span>Bull (25)</span>
         </button>
         <button
           onClick={() => handleSelectSegment(50)}
-          className="py-2.5 bg-red-950/60 hover:bg-red-900/60 text-red-300 border border-red-500/40 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1"
+          className="py-2.5 bg-red-950/60 hover:bg-red-900/60 text-red-300 border border-red-500/40 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1 min-w-0 w-full"
         >
           <span>D-Bull (50)</span>
         </button>
         <button
           onClick={() => handleSelectSegment(0)}
-          className="py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-400 border border-zinc-800 rounded-xl text-xs font-bold transition-all active:scale-95"
+          className="py-2.5 bg-zinc-950 hover:bg-zinc-800 text-zinc-400 border border-zinc-800 rounded-xl text-xs font-bold transition-all active:scale-95 min-w-0 w-full"
         >
           <span>Miss (0)</span>
         </button>

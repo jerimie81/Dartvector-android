@@ -36,14 +36,14 @@ export const TurnKeypad: React.FC<TurnKeypadProps> = ({ onSubmitScore, maxScore 
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 min-w-0 w-full">
       {/* Display */}
-      <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 rounded-xl border border-zinc-800">
-        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Turn Score:</span>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-mono font-black text-amber-400 min-h-[32px]">{value || '0'}</span>
+      <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 rounded-xl border border-zinc-800 min-w-0 w-full">
+        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider shrink-0">Turn Score:</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-2xl font-mono font-black text-amber-400 min-h-[32px] truncate">{value || '0'}</span>
           {value && (
-            <button onClick={handleClear} className="p-1 hover:text-white text-zinc-500">
+            <button onClick={handleClear} className="p-1 hover:text-white text-zinc-500 shrink-0">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -51,7 +51,7 @@ export const TurnKeypad: React.FC<TurnKeypadProps> = ({ onSubmitScore, maxScore 
       </div>
 
       {/* Grid Keypad */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 min-w-0 w-full">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
           <button
             key={digit}

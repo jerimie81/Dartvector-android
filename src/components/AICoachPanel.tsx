@@ -68,30 +68,30 @@ export const AICoachPanel: React.FC<AICoachPanelProps> = ({ gameState }) => {
   const advice = getTacticalAnalysis();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 min-w-0 w-full">
       <button
         id="toggle-ai-coach-btn"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-3 px-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-xs font-black uppercase tracking-wider text-amber-400 flex items-center justify-between transition-colors shadow-lg"
+        className="w-full py-3 px-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-xs font-black uppercase tracking-wider text-amber-400 flex items-center justify-between transition-colors shadow-lg min-w-0"
       >
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4" />
-          <span>PDC AI Match Coach & Commentary</span>
+        <div className="flex items-center gap-2 truncate">
+          <Sparkles className="w-4 h-4 shrink-0" />
+          <span className="truncate">PDC Match Coach & Tactics</span>
         </div>
-        <span className="text-zinc-500 flex items-center gap-1">
+        <span className="text-zinc-500 flex items-center gap-1 shrink-0">
           {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          <span>{isOpen ? 'Collapse' : 'Expand'}</span>
+          <span>{isOpen ? 'Hide' : 'Tips'}</span>
         </span>
       </button>
 
       {isOpen && (
-        <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3 text-xs leading-relaxed animate-in fade-in duration-200">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-            <span className="font-bold text-white flex items-center gap-1.5">
-              <Brain className="w-3.5 h-3.5 text-amber-400" />
-              <span>Live Tactical Assessment for {activePlayer.name}</span>
+        <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3 text-xs leading-relaxed animate-in fade-in duration-200 min-w-0 w-full">
+          <div className="flex items-center justify-between border-b border-zinc-800 pb-2 min-w-0">
+            <span className="font-bold text-white flex items-center gap-1.5 truncate">
+              <Brain className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">Tactical Analysis for {activePlayer.name}</span>
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">PDC Match Engine</span>
+            <span className="text-[10px] text-zinc-500 font-mono shrink-0">PDC Engine</span>
           </div>
 
           <div className="flex flex-col gap-2.5">

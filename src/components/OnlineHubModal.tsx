@@ -26,24 +26,24 @@ export const OnlineHubModal: React.FC<OnlineHubModalProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl flex flex-col gap-6">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto overflow-x-hidden">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl flex flex-col gap-5 min-w-0">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-4 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
               <Radio className="w-5 h-5 animate-pulse" />
             </div>
-            <div>
-              <h2 className="text-lg font-black text-white uppercase tracking-wide">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-black text-white uppercase tracking-wide truncate">
                 DartVector Online Hub
               </h2>
-              <p className="text-xs text-zinc-400">Multiplayer board sync & remote chalkboard broadcast</p>
+              <p className="text-xs text-zinc-400 truncate">Multiplayer board sync & remote chalkboard broadcast</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors"
+            className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>

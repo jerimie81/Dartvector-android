@@ -38,34 +38,34 @@ export const QuickScores: React.FC<QuickScoresProps> = ({ onScoreSelect, onOpenC
   };
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-2.5 min-w-0 w-full">
+      <div className="flex items-center justify-between flex-wrap gap-1">
         <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
           1-Tap Common House Scores
         </span>
         <span className="text-[10px] text-amber-400 font-semibold">Tap once to score instantly</span>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 min-w-0 w-full">
         {quickList.map((item) => (
           <button
             key={item.id}
             id={item.id}
             onClick={() => onScoreSelect(item.score)}
-            className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all shadow-sm ${getButtonClass(
+            className={`p-2 sm:p-2.5 rounded-xl border flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all shadow-sm min-w-0 w-full ${getButtonClass(
               item.highlight
             )}`}
           >
-            <span className="text-base font-black leading-none">{item.label}</span>
-            <span className="text-[9px] text-zinc-400 leading-tight truncate">{item.desc}</span>
+            <span className="text-sm sm:text-base font-black leading-none">{item.label}</span>
+            <span className="text-[9px] text-zinc-400 leading-tight truncate max-w-full">{item.desc}</span>
           </button>
         ))}
 
         <button
           onClick={onOpenCustomDialog}
-          className="p-2.5 rounded-xl border border-amber-500/30 bg-zinc-900 hover:bg-zinc-800 text-amber-400 flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all"
+          className="p-2 sm:p-2.5 rounded-xl border border-amber-500/30 bg-zinc-900 hover:bg-zinc-800 text-amber-400 flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all min-w-0 w-full"
         >
-          <span className="text-sm font-black leading-none">Other...</span>
+          <span className="text-xs sm:text-sm font-black leading-none">Other...</span>
           <span className="text-[9px] text-zinc-400 leading-tight">Type custom</span>
         </button>
       </div>

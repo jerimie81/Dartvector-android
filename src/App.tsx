@@ -12,6 +12,7 @@ import {
   MicOff,
   SkipForward,
   Bot,
+  RotateCcw,
 } from 'lucide-react';
 import {
   GameState,
@@ -73,6 +74,9 @@ export const App: React.FC = () => {
 
   // Speech Recognition (Voice entry)
   const [isListeningVoice, setIsListeningVoice] = useState(false);
+
+  // Undo History Stack for full state reversal
+  const [history, setHistory] = useState<GameState[]>([]);
 
   // Core Game State
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -143,8 +147,53 @@ export const App: React.FC = () => {
     };
   }, [gameState, isBotEnabled]);
 
+  // Undo last throw action (state reversal & updating scores/stats)
+  const handleUndo = () => {
+    if (history.length === 0) return;
+
+    if (botTimeoutRef.current) {
+      clearTimeout(botTimeoutRef.current);
+      botTimeoutRef.current = null;
+    }
+
+    const previousState = history[history.length - 1];
+    setHistory((prev) => prev.slice(0, -1));
+    setGameState(previousState);
+    audioEngine.playDartHit(false, false);
+  };
+
+  // Keyboard shortcut for Undo (Ctrl+Z / Cmd+Z / Backspace)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        handleUndo();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [history]);
+
   // Handle single dart throw
   const handleThrowDart = (dart: DartThrow) => {
+    // Push snapshot to undo stack
+    setHistory((prev) => [...prev.slice(-50), structuredClone(gameState)]);
+
     const isWire = !!dart.isWireHit;
     const isSpecial = dart.multiplier >= 2 || dart.segment === 50;
 
@@ -179,6 +228,9 @@ export const App: React.FC = () => {
 
   // Handle quick scores (e.g. 60, 100, 140, 180, BUST)
   const handleQuickScore = (totalScore: number) => {
+    // Push snapshot to undo stack
+    setHistory((prev) => [...prev.slice(-50), structuredClone(gameState)]);
+
     const result = applyQuickTurnScore(gameState, totalScore);
     setGameState(result.nextState);
 
@@ -207,6 +259,9 @@ export const App: React.FC = () => {
 
   // End turn manually (e.g. after 1 or 2 darts, or to pass visit)
   const handleEndTurn = () => {
+    // Push snapshot to undo stack
+    setHistory((prev) => [...prev.slice(-50), structuredClone(gameState)]);
+
     if (gameState.currentTurnDarts.length === 0) {
       // 0 score pass
       handleQuickScore(0);
@@ -236,6 +291,7 @@ export const App: React.FC = () => {
     players: Player[],
     isTeamMatch: boolean
   ) => {
+    setHistory([]);
     const fresh = createInitialGameState(gameType, rules, players, isTeamMatch);
     setGameState(fresh);
     setActiveNav('scoreboard');
@@ -303,35 +359,35 @@ export const App: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col selection:bg-amber-500 selection:text-zinc-950">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col selection:bg-amber-500 selection:text-zinc-950 overflow-x-hidden w-full">
       {/* Top Application Header */}
-      <header className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-3 overflow-x-hidden min-w-0 w-full">
         <div
           onClick={() => setActiveNav('scoreboard')}
-          className="flex items-center gap-3 cursor-pointer select-none group"
+          className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none group min-w-0"
         >
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-            <Target className="w-6 h-6 stroke-[2.5]" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
+            <Target className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-lg text-white tracking-tight">DARTVECTOR</span>
-              <span className="text-[10px] font-black uppercase bg-amber-500 text-zinc-950 px-1.5 py-0.2 rounded shadow-sm">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-black text-base sm:text-lg text-white tracking-tight">DARTVECTOR</span>
+              <span className="text-[9px] sm:text-[10px] font-black uppercase bg-amber-500 text-zinc-950 px-1.5 py-0.2 rounded shadow-sm shrink-0">
                 PRO
               </span>
             </div>
-            <span className="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase block">
+            <span className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider uppercase block truncate">
               PDC Precision Match Engine
             </span>
           </div>
         </div>
 
-        {/* Primary Navigation Buttons with explicit IDs matching blueprint and original HTML */}
-        <div className="hidden md:flex items-center gap-1.5 bg-zinc-900/90 p-1 rounded-2xl border border-zinc-800">
+        {/* Primary Navigation Buttons */}
+        <div className="hidden md:flex items-center gap-1 bg-zinc-900/90 p-1 rounded-2xl border border-zinc-800 shrink-0">
           <button
             id="nav-scoreboard-btn"
             onClick={() => setActiveNav('scoreboard')}
-            className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 ${
               activeNav === 'scoreboard'
                 ? 'bg-amber-500 text-zinc-950 shadow-md'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -344,7 +400,7 @@ export const App: React.FC = () => {
           <button
             id="nav-setup-btn"
             onClick={() => setShowSetupModal(true)}
-            className="px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+            className="px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
           >
             <Play className="w-4 h-4 fill-current" />
             <span>New Match</span>
@@ -353,65 +409,77 @@ export const App: React.FC = () => {
           <button
             id="nav-analytics-btn"
             onClick={() => setShowVaultModal(true)}
-            className="px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+            className="px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
           >
             <BarChart3 className="w-4 h-4" />
-            <span>Match Vault</span>
+            <span>Vault</span>
           </button>
 
           <button
             id="nav-multiplayer-btn"
             onClick={() => setShowOnlineModal(true)}
-            className="px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+            className="px-3.5 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
           >
             <Radio className="w-4 h-4" />
-            <span>Online Hub</span>
+            <span>Hub</span>
           </button>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
+          {/* Quick Undo in Top Bar */}
+          <button
+            id="top-bar-undo-btn"
+            onClick={handleUndo}
+            disabled={history.length === 0}
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 disabled:pointer-events-none text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-xs font-bold transition-all active:scale-95 shadow-sm"
+            title="Undo last throw (Ctrl+Z / Backspace)"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Undo</span>
+          </button>
+
           <button
             id="nav-league-night-btn"
             onClick={() => setShowLeagueModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30 text-xs font-bold transition-all active:scale-95 shadow-sm"
-            title="House League Night Leaderboard & Stats"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30 text-xs font-bold transition-all active:scale-95 shadow-sm"
+            title="House League Night Leaderboard"
           >
             <span>🍺</span>
-            <span className="hidden sm:inline">League Night</span>
+            <span className="hidden sm:inline">League</span>
           </button>
 
           <button
             id="nav-guide-btn"
             onClick={() => setShowGuideModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-xs font-bold transition-colors"
             title="How To Play & Scoring Quick Guide"
           >
-            <HelpCircle className="w-4 h-4 text-amber-400" />
+            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
             <span className="hidden lg:inline">Guide</span>
           </button>
 
           <button
             id="audio-settings-toggle-btn"
             onClick={() => setShowAudioModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 text-xs font-bold transition-colors"
             title="Referee & Audio Settings"
           >
-            <Volume2 className="w-4 h-4 text-amber-400" />
-            <span className="hidden sm:inline">Caller FX</span>
+            <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+            <span className="hidden sm:inline">Audio</span>
           </button>
 
           {/* Connection badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-emerald-400 text-xs font-semibold">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-emerald-400 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="hidden sm:inline">Online</span>
+            <span className="hidden sm:inline">Live</span>
           </div>
 
           {/* Mobile start new match */}
           <button
             id="mobile-new-match-btn"
             onClick={() => setShowSetupModal(true)}
-            className="md:hidden p-2 bg-amber-500 text-zinc-950 rounded-xl"
+            className="md:hidden p-2 bg-amber-500 text-zinc-950 rounded-xl shadow-md"
             title="New Match"
           >
             <Play className="w-4 h-4 fill-current" />
@@ -420,25 +488,27 @@ export const App: React.FC = () => {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <main className="flex-1 w-full max-w-7xl mx-auto p-3 sm:p-5 lg:p-8 flex flex-col gap-6 overflow-x-hidden min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-w-0 w-full">
           {/* Left Column (Scoreboard Card + Input Controls) */}
-          <div className="lg:col-span-7 flex flex-col gap-6">
+          <div className="lg:col-span-7 flex flex-col gap-5 sm:gap-6 min-w-0 w-full">
             <ScoreboardCard
               gameState={gameState}
               onEndTurn={handleEndTurn}
               onToggleChalkboard={() => setShowChalkboard(true)}
+              onUndo={handleUndo}
+              canUndo={history.length > 0}
             />
 
             {/* Turn Input Card */}
-            <div className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+            <div className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col gap-3 min-w-0">
               {/* Input Tabs Header */}
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3 min-w-0 w-full">
+                <div className="flex flex-wrap bg-zinc-950 p-1 rounded-xl border border-zinc-800 gap-1 min-w-0">
                   <button
                     id="tab-house-quick-btn"
                     onClick={() => setActiveInputTab('quick')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                       activeInputTab === 'quick'
                         ? 'bg-amber-500 text-zinc-950 shadow-md'
                         : 'text-zinc-400 hover:text-white'
@@ -449,7 +519,7 @@ export const App: React.FC = () => {
                   <button
                     id="tab-keypad-btn"
                     onClick={() => setActiveInputTab('keypad')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                       activeInputTab === 'keypad'
                         ? 'bg-amber-500 text-zinc-950 shadow-md'
                         : 'text-zinc-400 hover:text-white'
@@ -460,7 +530,7 @@ export const App: React.FC = () => {
                   <button
                     id="tab-dart-btn"
                     onClick={() => setActiveInputTab('dart')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                       activeInputTab === 'dart'
                         ? 'bg-amber-500 text-zinc-950 shadow-md'
                         : 'text-zinc-400 hover:text-white'
@@ -471,7 +541,7 @@ export const App: React.FC = () => {
                 </div>
 
                 {/* Voice Entry Button */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     id="voice-mic-btn"
                     onClick={handleToggleVoice}
@@ -488,17 +558,17 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Current Turn Status */}
-              <div className="flex flex-wrap items-center justify-between gap-2 bg-zinc-950/80 px-3 py-2 rounded-xl border border-zinc-800/80">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-zinc-400">Current Turn:</span>
-                  <div className="flex gap-1.5">
+              {/* Current Turn Status & Action Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 bg-zinc-950/80 px-3 py-2 rounded-xl border border-zinc-800/80 min-w-0 w-full">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span className="text-xs font-semibold text-zinc-400 shrink-0">Current Turn:</span>
+                  <div className="flex gap-1.5 shrink-0">
                     {[0, 1, 2].map((idx) => {
                       const d = gameState.currentTurnDarts[idx];
                       return (
                         <div
                           key={idx}
-                          className={`min-w-[42px] h-7 px-2 flex items-center justify-center rounded-md text-xs font-black border transition-all ${
+                          className={`min-w-[38px] sm:min-w-[42px] h-7 px-1.5 sm:px-2 flex items-center justify-center rounded-md text-xs font-black border transition-all ${
                             d
                               ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
                               : 'bg-zinc-900/60 text-zinc-600 border-zinc-800'
@@ -511,7 +581,19 @@ export const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Undo Throw Button */}
+                  <button
+                    id="turn-undo-btn"
+                    onClick={handleUndo}
+                    disabled={history.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:pointer-events-none text-zinc-300 hover:text-white rounded-lg border border-zinc-700 shadow-sm transition-all active:scale-95"
+                    title="Undo last throw (Ctrl+Z / Backspace)"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Undo Throw</span>
+                  </button>
+
                   <button
                     id="end-turn-btn"
                     onClick={handleEndTurn}
@@ -519,7 +601,7 @@ export const App: React.FC = () => {
                     title="Finish turn and switch to next player"
                   >
                     <SkipForward className="w-3.5 h-3.5 fill-current" />
-                    <span>End Turn</span>
+                    <span>Pass/End</span>
                   </button>
                 </div>
               </div>
@@ -546,17 +628,17 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Column (Regulation Sisal Dartboard + AI Coach) */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-2xl flex flex-col items-center gap-4 relative overflow-hidden">
-              <div className="w-full flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black uppercase tracking-wider text-amber-400">
+          <div className="lg:col-span-5 flex flex-col gap-4 min-w-0 w-full">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col items-center gap-4 relative overflow-hidden min-w-0 w-full">
+              <div className="w-full flex items-center justify-between border-b border-zinc-800 pb-3 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-400 truncate">
                     Regulation Sisal Board
                   </span>
                   <button
                     id="toggle-dartbot-btn"
                     onClick={() => setIsBotEnabled(!isBotEnabled)}
-                    className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1 ${
+                    className={`text-[11px] font-bold px-2 py-1 rounded-lg border transition-all flex items-center gap-1 shrink-0 ${
                       isBotEnabled
                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
                         : 'bg-zinc-800 text-zinc-400 border-zinc-700'
@@ -568,7 +650,7 @@ export const App: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     id="toggle-heatmap-btn"
                     onClick={() => setShowHeatmap(!showHeatmap)}
@@ -593,7 +675,7 @@ export const App: React.FC = () => {
                 interactive={!activePlayer.isBot}
               />
 
-              <div className="text-[11px] text-zinc-500 text-center font-medium">
+              <div className="text-[11px] text-zinc-500 text-center font-medium max-w-full">
                 Click or touch the board to throw pinpoint darts into double, treble, or single beds.
               </div>
             </div>
@@ -612,6 +694,8 @@ export const App: React.FC = () => {
         <ChalkboardView
           gameState={gameState}
           onClose={() => setShowChalkboard(false)}
+          onUndo={handleUndo}
+          canUndo={history.length > 0}
         />
       )}
 
@@ -656,8 +740,8 @@ export const App: React.FC = () => {
 
       {/* Custom Score Dialog */}
       {showCustomScoreDialog && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl flex flex-col gap-4 min-w-0">
             <h3 className="text-sm font-black text-white uppercase">Enter Custom Turn Score</h3>
             <p className="text-xs text-zinc-400">Type any total visit score from 0 to 180.</p>
             <input
@@ -668,7 +752,7 @@ export const App: React.FC = () => {
               onChange={(e) => setCustomScoreInput(e.target.value)}
               placeholder="e.g. 95"
               autoFocus
-              className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-lg font-mono font-bold text-amber-400 focus:outline-none focus:border-amber-500"
+              className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-lg font-mono font-bold text-amber-400 focus:outline-none focus:border-amber-500 w-full"
             />
             <div className="flex items-center justify-end gap-2">
               <button
