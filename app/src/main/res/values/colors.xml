@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_background">#09090B</color>
+    <color name="surface_panel">#111827</color>
+    <color name="surface_elevated">#18181B</color>
+    <color name="amber_primary">#F59E0B</color>
+    <color name="amber_soft">#FBBF24</color>
+    <color name="text_primary">#F4F4F5</color>
+    <color name="text_secondary">#A1A1AA</color>
+    <color name="nav_button_inactive">#18181B</color>
+    <color name="nav_button_active">#F59E0B</color>
+</resources>
